@@ -233,5 +233,5 @@ class RandomMaskedInputWithFeedback(tf.keras.layers.Layer):
         super().build(input_shape)
         
     def call(self, inputs):
-        inputs_tensor, list_prior_masks_tensors = inputs
+        inputs_tensor, prior_masks_tensors = inputs
         return self.masks * tf.expand_dims(inputs_tensor, 1), self.masks

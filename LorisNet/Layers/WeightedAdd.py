@@ -49,7 +49,9 @@ class WeightedAdd(tf.keras.layers.Layer):
         super().build(input_shape)
         
     def call(self, inputs):
-        ret = tf.reduce_sum(tf.squeeze(inputs) * self.kernel, 1)
+        ret = tf.squeeze(inputs) * self.kernel
+        if inputs.shape[1] != 1:
+            ret = tf.reduce_sum(ret, 1)
         if self.use_bias:
             ret += self.bias
         return ret
