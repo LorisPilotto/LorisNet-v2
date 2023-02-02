@@ -28,13 +28,14 @@ class ActivationMaskedInputNoFeedback(tf.keras.layers.Layer):
                                              constraint=self.masks_weights_constraint,
                                              dtype=self.dtype,
                                              trainable=True)
+        self.masks = self.get_masks()
         super().build(input_shape)
-    
-    def get_masks(self):
+        
+    def get_masks(self):  # can not be put in call function, o.w. gradient do not propagate
         return self.activation(self.masks_weights)
         
     def call(self, inputs):
-        return self.get_masks() * tf.expand_dims(inputs, 1), self.get_masks()
+        return self.activation(self.masks_weights) * tf.expand_dims(inputs, 1), self.activation(self.masks_weights)
     
     
 class ActivationMaskedInputWithFeedback(tf.keras.layers.Layer):
@@ -64,14 +65,15 @@ class ActivationMaskedInputWithFeedback(tf.keras.layers.Layer):
                                              constraint=self.masks_weights_constraint,
                                              dtype=self.dtype,
                                              trainable=True)
+        self.masks = self.get_masks()
         super().build(input_shape)
-    
-    def get_masks(self):
+        
+    def get_masks(self):  # can not be put in call function, o.w. gradient do not propagate
         return self.activation(self.masks_weights)
         
     def call(self, inputs):
         inputs_tensor, prior_masks_tensor = inputs
-        return self.get_masks() * tf.expand_dims(inputs_tensor, 1), self.get_masks()
+        return self.activation(self.masks_weights) * tf.expand_dims(inputs_tensor, 1), self.activation(self.masks_weights)
     
     
 class SigmoidMaskedInputNoFeedback(ActivationMaskedInputNoFeedback):
@@ -231,6 +233,35 @@ class RandomMaskedInputWithFeedback(tf.keras.layers.Layer):
         self.masks = tf.random.uniform((self.number_masks, an_input_tensor_dim),
                                        dtype=self.dtype)
         super().build(input_shape)
+        
+    def call(self, inputs):
+        inputs_tensor, prior_masks_tensors = inputs
+        return self.masks * tf.expand_dims(inputs_tensor, 1), self.masks
+    
+    
+class DeterminedMaskedInputNoFeedback(tf.keras.layers.Layer):
+    """"""
+    
+    def __init__(self,
+                 masks,
+                 **kwargs):
+        super().__init__(**kwargs)
+        self.masks = masks
+        self.number_masks = masks.shape[0]
+        
+    def call(self, inputs):
+        return self.masks * tf.expand_dims(inputs, 1), self.masks
+    
+    
+class DeterminedMaskedInputWithFeedback(tf.keras.layers.Layer):
+    """"""
+    
+    def __init__(self,
+                 masks,
+                 **kwargs):
+        super().__init__(**kwargs)
+        self.masks = masks
+        self.number_masks = masks.shape[0]
         
     def call(self, inputs):
         inputs_tensor, prior_masks_tensors = inputs

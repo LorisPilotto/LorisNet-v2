@@ -37,6 +37,5 @@ class StepWithFeedback(tf.keras.layers.Layer):
         masked_inputs, masks = self.masked_input_with_feedback_layer([inputs_tensor, prior_masks_tensor])
         vectorial_space_indicators = self.vectorial_space_separators(masked_inputs)
         predictions = self.prediction_neurons(tf.concat([prior_vectorial_space_indicators_tensor,
-                                                         vectorial_space_indicators], -1)
-                                             )
+                                                         vectorial_space_indicators], -1))
         return predictions, masks, vectorial_space_indicators
